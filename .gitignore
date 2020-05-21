@@ -1,5 +1,5 @@
-*/planetlab/*
-bin/*
+planetlab/
+bin/
 *.class
 jars/*
 documentation/*
