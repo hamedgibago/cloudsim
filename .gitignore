@@ -2,3 +2,5 @@
 planetlab/*
 bin/*
 *.class
+jars/*
+documentation/*
