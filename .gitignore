@@ -1,0 +1,4 @@
+!*.java
+planetlab/*
+bin/*
+*.class
