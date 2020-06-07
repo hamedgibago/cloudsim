@@ -29,6 +29,9 @@ public class HostStateHistoryEntry {
          * @see #time
          */
 	private boolean isActive;
+	
+	/**Energy added by hamed**/
+	private double enegry;
 
 	/**
 	 * Instantiates a new host state history entry.
@@ -43,6 +46,15 @@ public class HostStateHistoryEntry {
 		setAllocatedMips(allocatedMips);
 		setRequestedMips(requestedMips);
 		setActive(isActive);
+	}
+	
+	/*Constructor added by hamed*/
+	public HostStateHistoryEntry(double time, double allocatedMips, double requestedMips, boolean isActive,double energy) {
+		setTime(time);
+		setAllocatedMips(allocatedMips);
+		setRequestedMips(requestedMips);
+		setActive(isActive);
+		setEnegry(energy);
 	}
 
 	/**
@@ -115,6 +127,15 @@ public class HostStateHistoryEntry {
 	 */
 	public boolean isActive() {
 		return isActive;
+	}
+
+	/*added by hamed*/
+	public double getEnegry() {
+		return enegry;
+	}
+	/*added by hamed*/
+	public void setEnegry(double enegry) {
+		this.enegry = enegry;
 	}
 
 }

@@ -1,19 +1,13 @@
 package org.cloudbus.cloudsim.eicb;
 
-import java.io.Console;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.CloudletSchedulerSpaceShared;
 import org.cloudbus.cloudsim.Consts;
-import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.ResCloudlet;
 import org.cloudbus.cloudsim.core.CloudSim;
 
@@ -22,18 +16,9 @@ public class CloudletSchedulerEicb extends CloudletSchedulerSpaceShared {
 
 	@Override
 	public double updateVmProcessing(double currentTime, List<Double> mipsShare)
-	{
-		/*
-		List<ResCloudlet> execlist= getCloudletExecList();
-		List<ResCloudlet> failist= getCloudletFailedList();
-		List<ResCloudlet> finishlist= getCloudletFinishedList();
-		List<ResCloudlet> pauseclist= getCloudletPausedList();
-		List<ResCloudlet> waitlist= getCloudletWaitingList();*/
-		
+	{		
 		setCurrentMipsShare(mipsShare);
-		//commented by hamed
-		double timeSpam = currentTime - getPreviousTime(); // time since last update
-		 
+		double timeSpam = currentTime - getPreviousTime(); // time since last update		 
 		double capacity = 0.0;
 		int cpus = 0;
 
@@ -47,24 +32,18 @@ public class CloudletSchedulerEicb extends CloudletSchedulerSpaceShared {
 		capacity /= cpus; // average capacity of each cpu		
 		
 		// each machine in the exec list has the same amount of cpu
-	    for (ResCloudlet rcl : getCloudletExecList()) {		
-			//if((int)currentTime==rcl.getCloudletArrivalTime())
-							rcl.updateCloudletFinishedSoFar(
-		                   (long) (capacity * timeSpam * rcl.getNumberOfPes() * Consts.MILLION));	
-			
-			//Log.printLine("waiting exec: " +rcl.getCloudletId() +" - " + rcl.getCloudlet().getWaitingTime()
-				//	+ " - "+  (long) (capacity * timeSpam * rcl.getNumberOfPes() * Consts.MILLION));				
+	    for (ResCloudlet rcl : getCloudletExecList()) {
+	    	 int vmid= rcl.getCloudlet().getVmId();	    	
+	    	rcl.updateCloudletFinishedSoFar((long) (capacity * timeSpam * rcl.getNumberOfPes() * Consts.MILLION));
+	    	
+	    	//if(rcl.getCloudlet().getWaitingTime()>0)
+			//{
+				//System.out.println("waiting time: " + rcl.getCloudlet().getWaitingTime());
+			//}	
 		}
 		
-		
-		/*Log.printLine("exec size: " +getCloudletExecList().size());
-		Log.printLine("waiting list size: " +getCloudletWaitingList().size());
-							
-		for (ResCloudlet rcl : getCloudletWaitingList()) {
-			Log.printLine("waiting time: " +rcl.getCloudletId()+ " - " + rcl.getCloudlet().getWaitingTime());
-		}
-		*/
-		
+	    
+	    double percent= getTotalUtilizationOfCpu(currentTime);
 			
 		// no more cloudlets in this scheduler
 		if (getCloudletExecList().size() == 0 && getCloudletWaitingList().size() == 0) {
@@ -100,14 +79,13 @@ public class CloudletSchedulerEicb extends CloudletSchedulerSpaceShared {
 			List<activity> lsActivity=new ArrayList<activity>();
 			
 			for (ResCloudlet res : getCloudletWaitingList()) {
+							
 				lsActivity.add((activity)res.getCloudlet());
 			}
 			
 			List<activity> Edd= lsActivity.stream().sorted(Comparator.comparing(activity::getDeadline))
 			.collect(Collectors.toList());
-			
-			//getCloudletWaitingList().sort(Comparator.comparing(activity::));
-			
+
 			for (int i = 0; i < finished; i++) {
 				toRemove.clear();
 				for (ResCloudlet rcl : getCloudletWaitingList()) {					
@@ -147,19 +125,23 @@ public class CloudletSchedulerEicb extends CloudletSchedulerSpaceShared {
 		// it can go to the exec list
 		// added by Hamed, if it is normal activity,
 		// if its batchactivity, send it waiting queue
-		if (!((activity) cloudlet).acivityType) {
+		if ( //(currentCpus - usedPes) >= cloudlet.getNumberOfPes() &&
+				!((activity) cloudlet).acivityType) {
+								
 			ResCloudlet rcl = new ResCloudlet(cloudlet);		
-			rcl.setCloudletStatus(Cloudlet.READY);
+			rcl.setCloudletStatus(Cloudlet.INEXEC);
 
+			
 			for (int i = 0; i < cloudlet.getNumberOfPes(); i++) {
 				rcl.setMachineAndPeId(0, i);
 			}
+			
 			getCloudletExecList().add(rcl);
 			usedPes += cloudlet.getNumberOfPes();
 		}
 		else {
 			ResCloudlet rcl = new ResCloudlet(cloudlet);
-			// rcl.setCloudletStatus(Cloudlet.QUEUED);
+			rcl.setCloudletStatus(Cloudlet.QUEUED);
 			getCloudletWaitingList().add(rcl);
 
 			// TODO: waiting time of cloudlets should be set somewhere
@@ -193,7 +175,8 @@ public class CloudletSchedulerEicb extends CloudletSchedulerSpaceShared {
 		long length = cloudlet.getCloudletLength();
 		length += extraSize;
 		cloudlet.setCloudletLength(length);
-		return cloudlet.getCloudletLength() / capacity;
+		return cloudlet.getCloudletLength() / capacity;		
+		//test added 
 	}
 	
 //	

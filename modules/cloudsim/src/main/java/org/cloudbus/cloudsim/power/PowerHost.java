@@ -139,17 +139,33 @@ public class PowerHost extends HostDynamicWorkload {
 		//TODO: should get Running vm list
 		List<Vm> vmList= getVmList();
 		
+		
 		//TODO: farz kardim baraye baraye sigmaye dovom ke rnl hast
 		//tedad running vm ba tedad vm ha yeki hast
 		//dar surati ke bayar rnl tedad running az noe n bashe ke dar time t
 		//bar roye pm dar hale ejrast
+		//baraye sadetar shodane mozoo, vm haye tuye pm ro hamaro az ye noe migirim
+		//yani taghsim mikonim mips pm ro va masalan be 3 ta ya har chand ta vm
+		//ke lazeme takhsis midim. dar natije noe vm ha yeki mishe. chon MIPS
+		//hame vm haye tuye yek pm yekie
 		int rnl= vmList.size();
+		//number of hosts, first sigma in equation 2
+		int N=this.getDatacenter().getHostList().size(); 
 		
-		
-		for (int i = 0; i < rnl; i++) {
-			umt+= vmList.get(i).getMips()/this.getPeList().get(0).getMips();
+		for(int n=0;n<N;n++)
+		{
+			for (int l = 0; l < rnl; l++) {
+				umt+= vmList.get(l).getMips()/(this.getPeList().size()*this.getPeList().get(0).getMips());
+			}
 		}
 		
+		
+		double pemt = pefunction(umt);
+		
+		return pemt;							
+	}
+
+	private double pefunction(double umt) {
 		//The energy consumption rate at time instant t for the pm
 		//equation 1
 		//basic enery consumption
@@ -171,8 +187,7 @@ public class PowerHost extends HostDynamicWorkload {
 			pemt= phi+(11*alpha);
 		else if (umt>0.9 && umt<=1)
 			pemt=  phi+(12*alpha);
-		
-		return pemt;							
+		return pemt;
 	}
 
 	/**

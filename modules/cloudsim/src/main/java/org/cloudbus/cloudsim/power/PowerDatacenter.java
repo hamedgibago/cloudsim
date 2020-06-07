@@ -8,6 +8,7 @@
 
 package org.cloudbus.cloudsim.power;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -42,7 +43,7 @@ public class PowerDatacenter extends Datacenter {
 
 	/** The datacenter consumed power. */
 	private double power;
-
+		
 	/** Indicates if migrations are disabled or not. */
 	private boolean disableMigrations;
 
@@ -51,6 +52,8 @@ public class PowerDatacenter extends Datacenter {
 
 	/** The VM migration count. */
 	private int migrationCount;
+	
+	ArrayList<Object> energyOverTime=new ArrayList<>();
 
 	/**
 	 * Instantiates a new PowerDatacenter.
@@ -175,9 +178,10 @@ public class PowerDatacenter extends Datacenter {
 		Log.printLine("\n\n--------------------------------------------------------------\n\n");
 		Log.formatLine("New resource usage for the time frame starting at %.2f:", currentTime);
 
+		double timeFrameHostEnergy=0;
 		for (PowerHost host : this.<PowerHost> getHostList()) {
 			Log.printLine();
-
+			
 			double time = host.updateVmsProcessing(currentTime); // inform VMs to update processing
 			if (time < minTime) {
 				minTime = time;
@@ -195,6 +199,7 @@ public class PowerDatacenter extends Datacenter {
 					"\nEnergy consumption for the last time frame from %.2f to %.2f:",
 					getLastProcessTime(),
 					currentTime);
+			
 
 			for (PowerHost host : this.<PowerHost> getHostList()) {
 				double previousUtilizationOfCpu = host.getPreviousUtilizationOfCpu();
@@ -204,14 +209,16 @@ public class PowerDatacenter extends Datacenter {
 						previousUtilizationOfCpu,
 						utilizationOfCpu,
 						timeDiff);
-						*/
+						*/				
 				
-				double timeFrameHostEnergy = host.getEnergyChing_Hsien(
+				timeFrameHostEnergy = host.getEnergyChing_Hsien(
 						previousUtilizationOfCpu,
 						utilizationOfCpu,
 						timeDiff);
 				
 				timeFrameDatacenterEnergy += timeFrameHostEnergy;
+				
+				energyOverTime.add(timeFrameHostEnergy);
 
 				Log.printLine();
 				Log.formatLine(

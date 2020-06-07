@@ -629,6 +629,11 @@ public abstract class SimEntity implements Cloneable {
 	protected void sendNow(int entityId, int cloudSimTag, Object data) {
 		send(entityId, 0, cloudSimTag, data);
 	}
+	
+	//added by hamed for delay added
+	protected void sendNow(int entityId, int delay,int cloudSimTag, Object data) {
+		send(entityId, delay, cloudSimTag, data);
+	}
 
 	/**
 	 * Sends an event/message to another entity, with a tag representing the event type.

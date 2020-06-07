@@ -14,6 +14,7 @@ import java.util.List;
 
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.lists.PeList;
+import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.provisioners.BwProvisioner;
 import org.cloudbus.cloudsim.provisioners.RamProvisioner;
 
@@ -130,7 +131,11 @@ public class HostDynamicWorkload extends Host {
 				currentTime,
 				getUtilizationMips(),
 				hostTotalRequestedMips,
-				(getUtilizationMips() > 0));
+				(getUtilizationMips() > 0),
+				((PowerHost)this).getEnergyChing_Hsien(
+						getPreviousUtilizationOfCpu(),
+						getUtilizationOfCpu(),
+						currentTime - getDatacenter().getLastProcessTime()));
 
 		return smallerTime;
 	}
@@ -280,15 +285,14 @@ public class HostDynamicWorkload extends Host {
 	 * @param requestedMips the requested mips
 	 * @param isActive the is active
 	 */
-	public
-			void
-			addStateHistoryEntry(double time, double allocatedMips, double requestedMips, boolean isActive) {
-
+	public void addStateHistoryEntry(double time, double allocatedMips, double requestedMips, boolean isActive,double energy) 
+	{
 		HostStateHistoryEntry newState = new HostStateHistoryEntry(
 				time,
 				allocatedMips,
 				requestedMips,
-				isActive);
+				isActive,
+				energy);
 		if (!getStateHistory().isEmpty()) {
 			HostStateHistoryEntry previousState = getStateHistory().get(getStateHistory().size() - 1);
 			if (previousState.getTime() == time) {

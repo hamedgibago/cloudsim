@@ -13,11 +13,13 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.core.SimEntity;
 import org.cloudbus.cloudsim.core.SimEvent;
+import org.cloudbus.cloudsim.eicb.activity;
 import org.cloudbus.cloudsim.lists.CloudletList;
 import org.cloudbus.cloudsim.lists.VmList;
 
@@ -372,7 +374,11 @@ public class DatacenterBroker extends SimEntity {
 			}
 			
 			cloudlet.setVmId(vm.getId());
-			sendNow(getVmsToDatacentersMap().get(vm.getId()), CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
+			//if added by hamed for delay, but else is original
+//			if(((activity)cloudlet).acivityType)
+//				sendNow(getVmsToDatacentersMap().get(vm.getId()),1, CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
+//			else
+				sendNow(getVmsToDatacentersMap().get(vm.getId()), CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
 			cloudletsSubmitted++;
 			vmIndex = (vmIndex + 1) % getVmsCreatedList().size();
 			getCloudletSubmittedList().add(cloudlet);

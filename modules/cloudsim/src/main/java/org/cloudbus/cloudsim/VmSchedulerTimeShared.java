@@ -87,7 +87,7 @@ public class VmSchedulerTimeShared extends VmScheduler {
 		}
 
 		// This scheduler does not allow over-subscription
-		if (getAvailableMips() < totalRequestedMips) {
+ 		if (getAvailableMips() < totalRequestedMips) {
 			return false;
 		}
 

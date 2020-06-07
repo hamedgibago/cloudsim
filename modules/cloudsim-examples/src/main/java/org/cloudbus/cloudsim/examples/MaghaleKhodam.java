@@ -36,6 +36,8 @@ import org.cloudbus.cloudsim.Datacenter;
 import org.cloudbus.cloudsim.DatacenterBroker;
 import org.cloudbus.cloudsim.DatacenterCharacteristics;
 import org.cloudbus.cloudsim.Host;
+import org.cloudbus.cloudsim.HostDynamicWorkload;
+import org.cloudbus.cloudsim.HostStateHistoryEntry;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.Pe;
 import org.cloudbus.cloudsim.Storage;
@@ -51,6 +53,7 @@ import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.eicb.CloudletSchedulerEicb;
 import org.cloudbus.cloudsim.eicb.activity;
 import org.cloudbus.cloudsim.lists.HostList;
+import org.cloudbus.cloudsim.lists.PeList;
 import org.cloudbus.cloudsim.power.PowerDatacenter;
 import org.cloudbus.cloudsim.power.PowerDatacenterBroker;
 import org.cloudbus.cloudsim.power.PowerHost;
@@ -59,6 +62,13 @@ import org.cloudbus.cloudsim.power.models.PowerModelSpecPowerHpProLiantMl110G5Xe
 import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
+
+import com.sun.corba.se.spi.orbutil.fsm.State;
+
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.integration.*;
+
+
 
 
 
@@ -71,13 +81,25 @@ public class MaghaleKhodam {
 	/** The vmlist. */
 	private static List<Vm> vmlist;
 
+	
+	
 	/**
 	 * Creates main() to run this example.
 	 *
 	 * @param args the args
-	 */
+	 */	
 	@SuppressWarnings("unused")
 	public static void main(String[] args) {
+		
+		SimpsonIntegrator si=new SimpsonIntegrator();
+		//final double result = si.integrate(50, x -> x, 1, 3);
+		final double result = si.integrate(50, new UnivariateFunction() {
+	        @Override public double value(double x) {
+	            return x;
+	        }
+	    }, 1, 3);
+		Log.printLine(result + " should be 100");
+		
 		Log.printLine("Starting CloudSimExample1...");			
 
 		try {
@@ -86,79 +108,47 @@ public class MaghaleKhodam {
 			Calendar calendar = Calendar.getInstance(); // Calendar whose fields have been initialized with the current date and time.
  			boolean trace_flag = false; // trace events
 
-			/* Comment Start - Dinesh Bhagwat 
-			 * Initialize the CloudSim library. 
-			 * init() invokes initCommonVariable() which in turn calls initialize() (all these 3 methods are defined in CloudSim.java).
-			 * initialize() creates two collections - an ArrayList of SimEntity Objects (named entities which denote the simulation entities) and 
-			 * a LinkedHashMap (named entitiesByName which denote the LinkedHashMap of the same simulation entities), with name of every SimEntity as the key.
-			 * initialize() creates two queues - a Queue of SimEvents (future) and another Queue of SimEvents (deferred). 
-			 * initialize() creates a HashMap of of Predicates (with integers as keys) - these predicates are used to select a particular event from the deferred queue. 
-			 * initialize() sets the simulation clock to 0 and running (a boolean flag) to false.
-			 * Once initialize() returns (note that we are in method initCommonVariable() now), a CloudSimShutDown (which is derived from SimEntity) instance is created 
-			 * (with numuser as 1, its name as CloudSimShutDown, id as -1, and state as RUNNABLE). Then this new entity is added to the simulation 
-			 * While being added to the simulation, its id changes to 0 (from the earlier -1). The two collections - entities and entitiesByName are updated with this SimEntity.
-			 * the shutdownId (whose default value was -1) is 0    
-			 * Once initCommonVariable() returns (note that we are in method init() now), a CloudInformationService (which is also derived from SimEntity) instance is created 
-			 * (with its name as CloudInformatinService, id as -1, and state as RUNNABLE). Then this new entity is also added to the simulation. 
-			 * While being added to the simulation, the id of the SimEntitiy is changed to 1 (which is the next id) from its earlier value of -1. 
-			 * The two collections - entities and entitiesByName are updated with this SimEntity.
-			 * the cisId(whose default value is -1) is 1
-			 * Comment End - Dinesh Bhagwat 
-			 */
 			CloudSim.init(num_user, calendar, trace_flag);
 
-			// Second step: Create Datacenters
-			// Datacenters are the resource providers in CloudSim. We need at
-			// list one of them to run a CloudSim simulation
 		    PowerDatacenter datacenter0 = (PowerDatacenter)createDatacenter("Datacenter_0");
-			//Datacenter datacenter0 = createDatacenter("Datacenter_0");
 
-			// Third step: Create Broker
+
 			DatacenterBroker broker = createBroker();
 			int brokerId = broker.getId();
-			
-			
-
-			// Fourth step: Create one virtual machine
+						
 			vmlist = new ArrayList<Vm>();
 
 			// VM description
 			int vmid = 0;
-			int mips = 500;
-			long size = 10000; // image size (MB)
-			int ram = 512; // vm memory (MB)
-			long bw = 1000;
+			int mips =900;
 			int pesNumber = 1; // number of cpus
-			String vmm = "Xen"; // VMM name
-
-			// create VM
-			//Vm vm = new Vm(vmid, brokerId, mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerSpaceShared());
-			//Vm vm = new Vm(vmid, brokerId, mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerTimeShared());
-			//Vm vm2 = new Vm(vmid+1, brokerId, mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerSpaceShared());
 			
-			Vm vm = new Vm(vmid, brokerId, mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerEicb());
-			Vm vm2 = new Vm(vmid+1, brokerId, 400, pesNumber, ram, bw, size, vmm, new CloudletSchedulerEicb());			
 			
-			/*
-			for (int i = 0; i < 4; i++) {
-				Vm vm = new Vm(i, brokerId, mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerEicb());
-				vmlist.add(vm);
-			}
-			*/
-			
-
+			//Vm vm = new Vm(vmid, brokerId, mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerEicb());
+			//Vm vm2 = new Vm(vmid+1, brokerId, 400, pesNumber, ram, bw, size, vmm, new CloudletSchedulerEicb());			
 			// add the VM to the vmList
-		    vmlist.add(vm);
+			
+		    //vmlist.add(vm);
 			//vmlist.add(vm2);
-
+			
+			//4 vm for 1860 
+			createVms(brokerId, mips,1,pesNumber);
+			 
+			mips=1330;
+			//4 vm for 2660 
+			/*
+			 * for (int i = 4; i < 8; i++) { Vm vm = new Vm(i, brokerId, mips, pesNumber,
+			 * ram, bw, size, vmm, new CloudletSchedulerEicb());
+			 * vm.setHost(datacenter0.getHostList().get(1)); vmlist.add(vm); }
+			 */
+			 							
 			// submit vm list to the broker
-			broker.submitVmList(vmlist);			
+			broker.submitVmList(vmlist);
+			
 
-			// Fifth step: Create one Cloudlet
+	
 			cloudletList = new ArrayList<Cloudlet>();
-			
-			
-			
+									
 			Random rand = new Random();
 
 			// Cloudlet properties
@@ -170,130 +160,38 @@ public class MaghaleKhodam {
 			boolean acivityType=false;
 			int groupingChar=1;
 			int arrivingTime=1;
-			int dealine=120;
-
+			int dealine=120;					
 			
-			
-			UtilizationModel stocasticUtilModel = new UtilizationModelStochastic(100000); //new UtilizationModelFull();
-			
-			UtilizationModel fullUtilModel = new UtilizationModelFull();
-			
-			//((UtilizationModelStochastic)stocasticUtilModel).setRandomGenerator(randomGenerator);
-			
+			UtilizationModel fullUtilModel = new UtilizationModelFull();					
 			UtilizationModel nullutilizationModel = new UtilizationModelNull();
-			
-			
+						
 			workloadFromFile(brokerId, pesNumber, fileSize, outputSize, fullUtilModel, nullutilizationModel);
-
-										
-//			for (int i = 1; i <= 5; i++) {
-//				//if(i==1 || i==2)
-//				if(i == 1)
-//				{
-//					acivityType=false; //bool value, false=normal, true=batching
-//					groupingChar = 1; //random between [1-100]
-//				}	
-//				else if(i==5)
-//				{
-//					acivityType=true; //bool value, false=normal, true=batching
-//					groupingChar = 3; //random between [1-100]
-//				}
-//				else
-//				{
-//					acivityType=true; //bool value, false=normal, true=batching
-//					groupingChar = 2; //random between [1-100]
-//				}
-//				
-//				////////////////////implementation maghale////////////////////////////
-//				//length = rand.nextInt(100000-50000+1)+50000; //workload of activity
-//				//acivityType=rand.nextBoolean(); //bool value, false=normal, true=batching
-//				//groupingChar = rand.nextInt(100)+1; //random between [1-100]
-//				////////////////////////
-//				
-//				arrivingTime = rand.nextInt(10)+1; //random between [1-9]
-//				dealine= rand.nextInt(180-120+1)+120; //random between [120-180]
-//				
-//				activity ac=new activity(id, length, pesNumber, fileSize, outputSize, fullUtilModel,
-//						nullutilizationModel, nullutilizationModel,acivityType,groupingChar,arrivingTime,dealine);
-//				
-//				ac.setUserId(brokerId);
-//				//ac.setVmId(vmid);
-//				
-//				/*							
-//				Cloudlet cloudlet = new Cloudlet(id, length, pesNumber, fileSize, outputSize, utilizationModel,
-//						nullutilizationModel, nullutilizationModel);
-//				String s= Cloudlet.getStatusString(id);
-//				cloudlet.setUserId(brokerId);
-//				cloudlet.setVmId(vmid);
-//				
-//				cloudlet.setClassType(rand.nextInt(2));
-//				
-//				// add the cloudlet to the list
-//				cloudletList.add(cloudlet);
-//				*/										
-//				cloudletList.add(ac);
-//				id++;
-//				
-//			}
 			
-			/* test
-			for (int i = 0; i < 10; i++) {
-				length = rand.nextInt(100000-50000+1)+50000; //workload of activity
-				acivityType=rand.nextBoolean(); //bool value, false=normal, true=batching
-				groupingChar = rand.nextInt(3)+1; //random between [1-100]
-				arrivingTime = rand.nextInt(10)+1; //random between [1-9]
-				dealine= rand.nextInt(180-120+1)+120; //random between [120-180]
-				
-				activity ac=new activity(id, length, pesNumber, fileSize, outputSize, stocasticUtilModel,
-						nullutilizationModel, nullutilizationModel,acivityType,groupingChar,arrivingTime,dealine);
-				
-				ac.setUserId(brokerId);
-				cloudletListTest.add(ac);
-			}			
-			BatchProcess((List<activity>)(List<?>)cloudletListTest);
+			/* Random 500 cloudlets
+			 * for (int i = 0; i < 500; i++) { //rand.nextInt(100)+1; //random between
+			 * [1-100] activity ac=new activity(i,rand.nextInt(500)+1,1, fileSize,
+			 * outputSize, fullUtilModel, nullutilizationModel,
+			 * nullutilizationModel,rand.nextBoolean() ,rand.nextInt(10)+1,0,6);
+			 * ac.setUserId(brokerId); cloudletList.add(ac); }
+			 */
 			
-			*/
-			
-			
-			//BatchProcess((List<activity>)(List<?>)cloudletList);
-			
-			// submit cloudlet list to the broker
 			broker.submitCloudletList(cloudletList);
 			
-			
-			
-			//added by hamed for get status of all cloudlets
-			cloudletList.forEach(cloudlet->{
-				//Log.printLine("cloudlet list status: ");
-				//Log.printLine(cloudlet.getCloudletStatusString());
-				//Log.printLine(cloudlet.getClassType());
-				//Log.printLine(String.format("type %s - grp %d - ",((activity)cloudlet).acivityType ,((activity)cloudlet).groupingChar));
-				Log.printLine(String.format("(%d,%d,%s,%d,%d,%d)",
-						cloudlet.getCloudletId(),cloudlet.getCloudletLength(),
-						((activity)cloudlet).acivityType ,((activity)cloudlet).groupingChar,
-						((activity)cloudlet).arrivingTime ,((activity)cloudlet).deadline
-						));
-				//Log.printLine(String.format("acivityType %s - groupingChar %d - arrivingTime %d - dealine %d",
-						//((activity)cloudlet).acivityType,((activity)cloudlet).groupingChar,((activity)cloudlet).arrivingTime,((activity)cloudlet).dealine));
-			});
-			
-			
-			
-			
-			//added by hamed Algorithm1 Batch Process Activity Instances
-			/*cloudletList.forEach(cloudlet->{
-				cloudlet.getClassType()
-			});*/
-		
-			
-
-			// Sixth step: Starts the simulation
 			CloudSim.startSimulation();
-			
-			//Log.printLine("test");
+
 
 			CloudSim.stopSimulation();
-
+			
+			
+			
+			for (int i = 0; i < datacenter0.getHostList().size(); i++) {
+				List<HostStateHistoryEntry> ls2=((HostDynamicWorkload)datacenter0.getHostList().get(i)).getStateHistory();
+				for (int j = 0; j < ls2.size(); j++) {
+					Log.printLine("Energy history for host "+i+" : at time "+ls2.get(j).getTime()+" is : " +ls2.get(j).getEnegry());	
+				}													
+			}
+			
+			
 			//Final step: Print results when simulation is over
 			List<Cloudlet> newList = broker.getCloudletReceivedList();
 			printCloudletList(newList);
@@ -303,6 +201,22 @@ public class MaghaleKhodam {
 			e.printStackTrace();
 			Log.printLine("Unwanted errors happen");
 		}
+	}
+
+
+	private static void createVms(int brokerId, int mips, int numberofVms,int pesNumber) {
+		long size = 10000; // image size (MB)
+		int ram = 512; // vm memory (MB)
+		long bw = 1000;
+		
+		String vmm = "Xen"; // VMM name
+		
+		
+		 for (int i = 0; i < numberofVms; i++) { 
+			 Vm vm = new Vm(i, brokerId, mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerEicb());				
+			 //vm.setHost(datacenter0.getHostList().get(0));
+			 vmlist.add(vm); 
+		 }
 	}
 
 
@@ -378,7 +292,6 @@ public class MaghaleKhodam {
 					storage,
 					peList,
 					new VmSchedulerTimeShared(peList),
-					//new VmSchedulerSpaceShared(peList),
 					new PowerModelSpecPowerHpProLiantMl110G4Xeon3040() 
 				)
 			); // This is our machine
@@ -386,7 +299,15 @@ public class MaghaleKhodam {
 		// HP ProLiant ML110 G5 
 		// with same memory
 		hostId = 1;			
-		/*
+		
+		//clean peList
+		peList = new ArrayList<Pe>();
+		//added dual core pe for G5
+		mips=2660;
+		peList.add(new Pe(0, new PeProvisionerSimple(mips))); // need to store Pe id and MIPS Rating
+		peList.add(new Pe(1, new PeProvisionerSimple(mips))); // need to store Pe id and MIPS Rating
+
+
 		hostList.add(
 				new PowerHost(
 					hostId,
@@ -395,10 +316,11 @@ public class MaghaleKhodam {
 					storage,
 					peList,
 					new VmSchedulerTimeShared(peList),
-					new PowerModelSpecPowerHpProLiantMl110G5Xeon3075() 
+				new PowerModelSpecPowerHpProLiantMl110G5Xeon3075() 
 				)
 			); // This is our machine
-		*/
+		
+		
 		/*
 		// Added by Hamed Akrami
 		// HP ProLiant ML110 G4
