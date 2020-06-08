@@ -131,7 +131,7 @@ public class PowerHost extends HostDynamicWorkload {
 	 * @param time the time
 	 * @return the energy
 	 */
-	public double getEnergyChing_Hsien(double fromUtilization, double toUtilization, double time) {
+	public double getEnergyChing_Hsien(double time) {
 		
 		//Cpu utilization of PM at time t
 		double umt=0;

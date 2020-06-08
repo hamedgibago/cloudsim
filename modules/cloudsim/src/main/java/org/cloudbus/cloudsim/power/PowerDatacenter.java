@@ -211,10 +211,7 @@ public class PowerDatacenter extends Datacenter {
 						timeDiff);
 						*/				
 				
-				timeFrameHostEnergy = host.getEnergyChing_Hsien(
-						previousUtilizationOfCpu,
-						utilizationOfCpu,
-						timeDiff);
+				timeFrameHostEnergy = host.getEnergyChing_Hsien(currentTime);
 				
 				timeFrameDatacenterEnergy += timeFrameHostEnergy;
 				

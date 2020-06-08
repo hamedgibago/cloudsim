@@ -93,13 +93,12 @@ public class MaghaleKhodam {
 		
 		SimpsonIntegrator si=new SimpsonIntegrator();
 		//final double result = si.integrate(50, x -> x, 1, 3);
-		final double result = si.integrate(50, new UnivariateFunction() {
-	        @Override public double value(double x) {
-	            return x;
-	        }
-	    }, 1, 3);
-		Log.printLine(result + " should be 100");
-		
+		/*
+		 * final double result = si.integrate(50, new UnivariateFunction() {
+		 * 
+		 * @Override public double value(double x) { return value2(x); } }, 1, 3);
+		 * Log.printLine(result + " integral result");
+		 */		
 		Log.printLine("Starting CloudSimExample1...");			
 
 		try {
@@ -183,13 +182,34 @@ public class MaghaleKhodam {
 			CloudSim.stopSimulation();
 			
 			
+			List<Object> energyList=new ArrayList();
+			
+			//final double result = si.integrate(50, new UnivariateFunction() {
+//	        @Override public double value(double x) {
+//	            return x;
+//	        }
+//	    },0, 3.01);
 			
 			for (int i = 0; i < datacenter0.getHostList().size(); i++) {
-				List<HostStateHistoryEntry> ls2=((HostDynamicWorkload)datacenter0.getHostList().get(i)).getStateHistory();
-				for (int j = 0; j < ls2.size(); j++) {
-					Log.printLine("Energy history for host "+i+" : at time "+ls2.get(j).getTime()+" is : " +ls2.get(j).getEnegry());	
-				}													
+				Host host= datacenter0.getHostList().get(i);
+				List<HostStateHistoryEntry> stateList=((HostDynamicWorkload)host).getStateHistory();
+				
+				final double energy = si.integrate(50, new UnivariateFunction() {
+			        @Override public double value(double time) {
+						return ((PowerHost)host).getEnergyChing_Hsien(time);
+			        }
+			    },stateList.get(0).getTime(), stateList.get(stateList.size()-1).getTime());
+				
+				 Log.printLine("Total Energy for host "+i+" :  "+energy);
+
+				
+				/*
+				 * for (int j = 0; j < stateList.size(); j++) {
+				 * Log.printLine("Energy history for host "+i+" : at time "+stateList.get(j).
+				 * getTime()+" is : " +stateList.get(j).getEnegry()); }
+				 */												
 			}
+			
 			
 			
 			//Final step: Print results when simulation is over
@@ -202,7 +222,10 @@ public class MaghaleKhodam {
 			Log.printLine("Unwanted errors happen");
 		}
 	}
-
+	
+	public static double value2(double x) {
+        return x;
+	}
 
 	private static void createVms(int brokerId, int mips, int numberofVms,int pesNumber) {
 		long size = 10000; // image size (MB)

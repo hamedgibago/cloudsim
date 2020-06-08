@@ -132,10 +132,7 @@ public class HostDynamicWorkload extends Host {
 				getUtilizationMips(),
 				hostTotalRequestedMips,
 				(getUtilizationMips() > 0),
-				((PowerHost)this).getEnergyChing_Hsien(
-						getPreviousUtilizationOfCpu(),
-						getUtilizationOfCpu(),
-						currentTime - getDatacenter().getLastProcessTime()));
+				((PowerHost)this).getEnergyChing_Hsien(currentTime));
 
 		return smallerTime;
 	}
