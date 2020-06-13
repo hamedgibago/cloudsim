@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+
 
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.CloudSimTags;
@@ -371,14 +371,26 @@ public class DatacenterBroker extends SimEntity {
 			if (!Log.isDisabled()) {
 			    Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Sending cloudlet ",
 					cloudlet.getCloudletId(), " to VM #", vm.getId());
-			}
+			}							
 			
 			cloudlet.setVmId(vm.getId());
+			
+			//in yeki teghbe maghale dar in forum:  
+			//https://groups.google.com/forum/#!topic/cloudsim/HRrjmGDFeAY
+			//schedule(dest, delay, tag);
+			
+			//added by Hamed, Arriving time ok shod	
+			//if(!((activity)cloudlet).acivityType)
+				sendNow(getVmsToDatacentersMap().get(vm.getId()), ((activity)cloudlet).arrivingTime,CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
+			//else
+				//sendNow(getVmsToDatacentersMap().get(vm.getId()), ((activity)cloudlet).arrivingTime,CloudSimTags.CLOUDLET_PAUSE, cloudlet);
+			
+			
 			//if added by hamed for delay, but else is original
 //			if(((activity)cloudlet).acivityType)
 //				sendNow(getVmsToDatacentersMap().get(vm.getId()),1, CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
 //			else
-				sendNow(getVmsToDatacentersMap().get(vm.getId()), CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
+				//sendNow(getVmsToDatacentersMap().get(vm.getId()), CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
 			cloudletsSubmitted++;
 			vmIndex = (vmIndex + 1) % getVmsCreatedList().size();
 			getCloudletSubmittedList().add(cloudlet);

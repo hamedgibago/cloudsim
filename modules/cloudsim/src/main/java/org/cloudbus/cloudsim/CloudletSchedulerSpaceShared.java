@@ -13,6 +13,8 @@ import java.util.List;
 
 import org.cloudbus.cloudsim.core.CloudSim;
 
+import com.sun.corba.se.pept.broker.Broker;
+
 /**
  * CloudletSchedulerSpaceShared implements a policy of scheduling performed by a virtual machine
  * to run its {@link Cloudlet Cloudlets}.
@@ -368,6 +370,9 @@ public class CloudletSchedulerSpaceShared extends CloudletScheduler {
 	public double getTotalUtilizationOfCpu(double time) {
 		double totalUtilization = 0;
 		for (ResCloudlet gl : getCloudletExecList()) {
+			//gl.getMachineIdList();
+			gl.getMachineId();
+			
 			totalUtilization += gl.getCloudlet().getUtilizationOfCpu(time);
 		}
 		return totalUtilization;

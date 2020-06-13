@@ -8,15 +8,22 @@ import java.util.stream.Collectors;
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.CloudletSchedulerSpaceShared;
 import org.cloudbus.cloudsim.Consts;
+import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.ResCloudlet;
 import org.cloudbus.cloudsim.core.CloudSim;
 
-public class CloudletSchedulerEicb extends CloudletSchedulerSpaceShared {
-	
+import com.sun.corba.se.pept.broker.Broker;
 
+public class CloudletSchedulerEicb extends CloudletSchedulerSpaceShared {
+		
 	@Override
 	public double updateVmProcessing(double currentTime, List<Double> mipsShare)
-	{		
+	{			
+		double total= getTotalUtilizationOfCpu(currentTime);
+		
+		
+		
+		
 		setCurrentMipsShare(mipsShare);
 		double timeSpam = currentTime - getPreviousTime(); // time since last update		 
 		double capacity = 0.0;
@@ -71,21 +78,47 @@ public class CloudletSchedulerEicb extends CloudletSchedulerSpaceShared {
 			//TODO: gharar shod inja list cloudlet ro ke filter konam bar asase
 			//grouingchar va hameye unayee ke tu groupingchar yeksan gharar darand ro
 			//beferestam baraye ejra
-			//TODO: dar marhaleye bad bayad sharte waitingtime after deadline ro ezafe konam			
+			//TODO: dar marhaleye bad bayad sharte waitingtime after deadline ro ezafe konam
+			for (ResCloudlet res : getCloudletWaitingList()) {
+				Cloudlet cl=res.getCloudlet();
+				//waiting time is over: Algorithm 1 line 6
+				if(currentTime>=((activity)cl).arrivingTime)
+				{
+					res.setCloudletStatus(Cloudlet.INEXEC);		
+					getCloudletExecList().add(res);
+					getCloudletWaitingList().remove(res);
+					//TODO: add cloudlets with same GC in waiting list to exec 
+					//list and remove from waiting list
+					for (ResCloudlet resGroup : getCloudletWaitingList()) {
+						if(((activity)resGroup.getCloudlet()).groupingChar==((activity)res.getCloudlet()).groupingChar)
+						{
+							resGroup.setCloudletStatus(Cloudlet.INEXEC);		
+							getCloudletExecList().add(resGroup);
+							getCloudletWaitingList().remove(resGroup);							
+						}
+					}
+				}
+			}			
+			
+			/*
 			List<ResCloudlet> ls=getCloudletWaitingList().stream()
 					.filter(cl->((activity)cl.getCloudlet()).groupingChar==groupingChar)
 					.collect(Collectors.toList());
 			
+			
 			List<activity> lsActivity=new ArrayList<activity>();
 			
 			for (ResCloudlet res : getCloudletWaitingList()) {
-							
+					
 				lsActivity.add((activity)res.getCloudlet());
 			}
 			
 			List<activity> Edd= lsActivity.stream().sorted(Comparator.comparing(activity::getDeadline))
 			.collect(Collectors.toList());
-
+			*/
+			
+			//commented by hamed
+			/*
 			for (int i = 0; i < finished; i++) {
 				toRemove.clear();
 				for (ResCloudlet rcl : getCloudletWaitingList()) {					
@@ -102,6 +135,7 @@ public class CloudletSchedulerEicb extends CloudletSchedulerSpaceShared {
 				}
 				getCloudletWaitingList().removeAll(toRemove);
 			}
+			*/
 		}
 
 		// estimate finish time of cloudlets in the execution queue
@@ -120,14 +154,16 @@ public class CloudletSchedulerEicb extends CloudletSchedulerSpaceShared {
 		return nextEvent;		
 	}
 	
+	
+	
 	@Override
 	public double cloudletSubmit(Cloudlet cloudlet, double fileTransferTime) {
 		// it can go to the exec list
 		// added by Hamed, if it is normal activity,
 		// if its batchactivity, send it waiting queue
 		if ( //(currentCpus - usedPes) >= cloudlet.getNumberOfPes() &&
-				!((activity) cloudlet).acivityType) {
-								
+				!((activity) cloudlet).acivityType) {				
+						
 			ResCloudlet rcl = new ResCloudlet(cloudlet);		
 			rcl.setCloudletStatus(Cloudlet.INEXEC);
 
@@ -138,6 +174,7 @@ public class CloudletSchedulerEicb extends CloudletSchedulerSpaceShared {
 			
 			getCloudletExecList().add(rcl);
 			usedPes += cloudlet.getNumberOfPes();
+			
 		}
 		else {
 			ResCloudlet rcl = new ResCloudlet(cloudlet);
@@ -175,8 +212,7 @@ public class CloudletSchedulerEicb extends CloudletSchedulerSpaceShared {
 		long length = cloudlet.getCloudletLength();
 		length += extraSize;
 		cloudlet.setCloudletLength(length);
-		return cloudlet.getCloudletLength() / capacity;		
-		//test added 
+		return cloudlet.getCloudletLength() / capacity;	
 	}
 	
 //	

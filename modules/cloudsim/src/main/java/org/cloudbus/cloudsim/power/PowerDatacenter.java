@@ -232,10 +232,11 @@ public class PowerDatacenter extends Datacenter {
 						timeFrameHostEnergy);
 			}
 
-			Log.formatLine(
-					"\n%.2f: Data center's energy is %.2f W*sec\n",
-					currentTime,
-					timeFrameDatacenterEnergy);
+			//commented by hamed
+			/*
+			 * Log.formatLine( "\n%.2f: Data center's energy is %.2f W*sec\n", currentTime,
+			 * timeFrameDatacenterEnergy);
+			 */
 		}
 
 		setPower(getPower() + timeFrameDatacenterEnergy);

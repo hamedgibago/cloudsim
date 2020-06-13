@@ -45,6 +45,7 @@ import org.cloudbus.cloudsim.UtilizationModel;
 import org.cloudbus.cloudsim.UtilizationModelFull;
 import org.cloudbus.cloudsim.UtilizationModelNull;
 import org.cloudbus.cloudsim.UtilizationModelStochastic;
+import org.cloudbus.cloudsim.UtilizationModelThreshold;
 import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.VmAllocationPolicySimple;
 import org.cloudbus.cloudsim.VmSchedulerSpaceShared;
@@ -57,6 +58,11 @@ import org.cloudbus.cloudsim.lists.PeList;
 import org.cloudbus.cloudsim.power.PowerDatacenter;
 import org.cloudbus.cloudsim.power.PowerDatacenterBroker;
 import org.cloudbus.cloudsim.power.PowerHost;
+import org.cloudbus.cloudsim.power.PowerHostUtilizationHistory;
+import org.cloudbus.cloudsim.power.PowerVm;
+import org.cloudbus.cloudsim.power.PowerVmAllocationPolicyMigrationStaticThreshold;
+import org.cloudbus.cloudsim.power.PowerVmSelectionPolicy;
+import org.cloudbus.cloudsim.power.PowerVmSelectionPolicyMinimumUtilization;
 import org.cloudbus.cloudsim.power.models.PowerModelSpecPowerHpProLiantMl110G4Xeon3040;
 import org.cloudbus.cloudsim.power.models.PowerModelSpecPowerHpProLiantMl110G5Xeon3075;
 import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
@@ -117,9 +123,17 @@ public class MaghaleKhodam {
 						
 			vmlist = new ArrayList<Vm>();
 
+			// we try to create vms based on cloudlet size
+			// or pm threshold 
+			// first we create one vm based on 70% pm cpu 
+			// and during the simulation and scheduling we add more vms based on 
+			// cloudlet size
+			// we set 70% in creation of datacenter object, 
+			// in PowerVmAllocationPolicyMigrationStaticThreshold
+			// before it was VmAllocationPolicySimple 
 			// VM description
 			int vmid = 0;
-			int mips =900;
+			int mips =1320;
 			int pesNumber = 1; // number of cpus
 			
 			
@@ -131,7 +145,7 @@ public class MaghaleKhodam {
 			//vmlist.add(vm2);
 			
 			//4 vm for 1860 
-			createVms(brokerId, mips,1,pesNumber);
+			createVms(brokerId, mips,2,pesNumber);
 			 
 			mips=1330;
 			//4 vm for 2660 
@@ -161,10 +175,12 @@ public class MaghaleKhodam {
 			int arrivingTime=1;
 			int dealine=120;					
 			
-			UtilizationModel fullUtilModel = new UtilizationModelFull();					
-			UtilizationModel nullutilizationModel = new UtilizationModelNull();
+			UtilizationModel thresholdUtilModel = new UtilizationModelThreshold(70);
+			UtilizationModel nullutilizationModel=new UtilizationModelNull();
+			UtilizationModel fullutilizationModel=new UtilizationModelFull();
+			
 						
-			workloadFromFile(brokerId, pesNumber, fileSize, outputSize, fullUtilModel, nullutilizationModel);
+			workloadFromFile(brokerId, pesNumber, fileSize, outputSize, thresholdUtilModel, nullutilizationModel);
 			
 			/* Random 500 cloudlets
 			 * for (int i = 0; i < 500; i++) { //rand.nextInt(100)+1; //random between
@@ -190,26 +206,34 @@ public class MaghaleKhodam {
 //	        }
 //	    },0, 3.01);
 			
+			//equation 4 
+			double DatacenterEnergy=0;
+			
 			for (int i = 0; i < datacenter0.getHostList().size(); i++) {
 				Host host= datacenter0.getHostList().get(i);
 				List<HostStateHistoryEntry> stateList=((HostDynamicWorkload)host).getStateHistory();
 				
-				final double energy = si.integrate(50, new UnivariateFunction() {
-			        @Override public double value(double time) {
-						return ((PowerHost)host).getEnergyChing_Hsien(time);
-			        }
-			    },stateList.get(0).getTime(), stateList.get(stateList.size()-1).getTime());
 				
-				 Log.printLine("Total Energy for host "+i+" :  "+energy);
-
+					final double energy = si.integrate(50, new UnivariateFunction() {
+				        @Override public double value(double time) {
+							return ((PowerHost)host).getEnergyChing_Hsien(time);
+				        }
+				    },stateList.get(0).getTime(), stateList.get(stateList.size()-1).getTime());
+					
+					DatacenterEnergy+=energy;
+					Log.printLine("Total Energy for host "+i+" :  "+energy);
+				
+				
+				
 				
 				/*
 				 * for (int j = 0; j < stateList.size(); j++) {
 				 * Log.printLine("Energy history for host "+i+" : at time "+stateList.get(j).
 				 * getTime()+" is : " +stateList.get(j).getEnegry()); }
-				 */												
+				 		*/										
 			}
 			
+			Log.printLine("Datacenter Energy is: "+DatacenterEnergy);
 			
 			
 			//Final step: Print results when simulation is over
@@ -236,7 +260,7 @@ public class MaghaleKhodam {
 		
 		
 		 for (int i = 0; i < numberofVms; i++) { 
-			 Vm vm = new Vm(i, brokerId, mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerEicb());				
+			 Vm vm = new PowerVm(i, brokerId, mips, pesNumber, ram, bw,size, 1 ,vmm, new CloudletSchedulerEicb(),1000);				
 			 //vm.setHost(datacenter0.getHostList().get(0));
 			 vmlist.add(vm); 
 		 }
@@ -305,7 +329,7 @@ public class MaghaleKhodam {
 		int ram = 4096; // host memory (MB)
 		long storage = 1000000; // host storage
 		int bw = 10000;
-		
+		/*
 		hostList.add(
 				new PowerHost(
 				//new Host(
@@ -318,6 +342,8 @@ public class MaghaleKhodam {
 					new PowerModelSpecPowerHpProLiantMl110G4Xeon3040() 
 				)
 			); // This is our machine
+			
+	    */
 		
 		// HP ProLiant ML110 G5 
 		// with same memory
@@ -332,7 +358,7 @@ public class MaghaleKhodam {
 
 
 		hostList.add(
-				new PowerHost(
+				new PowerHostUtilizationHistory(
 					hostId,
 					new RamProvisionerSimple(ram),
 					new BwProvisionerSimple(bw),
@@ -388,15 +414,18 @@ public class MaghaleKhodam {
 		
 
 		// 6. Finally, we need to create a PowerDatacenter object.
-		Datacenter datacenter = null;
+		PowerDatacenter datacenter = null;
 		try {
-			//for power datacenter need to set scheduling interval 
-			
-			datacenter = new PowerDatacenter(name, characteristics, new VmAllocationPolicySimple(hostList), storageList, 1);
+			PowerVmSelectionPolicy vmSelectionPolicy=new PowerVmSelectionPolicyMinimumUtilization();
+			//for power datacenter need to set scheduling interval 			
+			//datacenter = new PowerDatacenter(name, characteristics, new VmAllocationPolicySimple(hostList), storageList, 1);
+			datacenter = new PowerDatacenter(name, characteristics, 
+					new PowerVmAllocationPolicyMigrationStaticThreshold(hostList,vmSelectionPolicy,0.7), storageList, 1);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}		
 		
+		datacenter.setDisableMigrations(false);
 		
 		return datacenter;
 	}

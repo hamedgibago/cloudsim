@@ -23,12 +23,8 @@ public class CloudletSchedulerEicb2 extends CloudletSchedulerSpaceShared {
 	@Override
 	public double updateVmProcessing(double currentTime, List<Double> mipsShare)
 	{
-		/*
-		List<ResCloudlet> execlist= getCloudletExecList();
-		List<ResCloudlet> failist= getCloudletFailedList();
-		List<ResCloudlet> finishlist= getCloudletFinishedList();
-		List<ResCloudlet> pauseclist= getCloudletPausedList();
-		List<ResCloudlet> waitlist= getCloudletWaitingList();*/
+		
+		
 		
 		setCurrentMipsShare(mipsShare);
 		//commented by hamed
@@ -56,8 +52,8 @@ public class CloudletSchedulerEicb2 extends CloudletSchedulerSpaceShared {
 				//	+ " - "+  (long) (capacity * timeSpam * rcl.getNumberOfPes() * Consts.MILLION));				
 		}
 		
-		
-		/*Log.printLine("exec size: " +getCloudletExecList().size());
+		/*
+		Log.printLine("exec size: " +getCloudletExecList().size());
 		Log.printLine("waiting list size: " +getCloudletWaitingList().size());
 							
 		for (ResCloudlet rcl : getCloudletWaitingList()) {
