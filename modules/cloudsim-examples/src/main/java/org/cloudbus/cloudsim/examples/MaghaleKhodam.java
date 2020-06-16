@@ -133,7 +133,7 @@ public class MaghaleKhodam {
 			// before it was VmAllocationPolicySimple 
 			// VM description
 			int vmid = 0;
-			int mips =1320;
+			int mips =1860;
 			int pesNumber = 1; // number of cpus
 			
 			
@@ -182,12 +182,21 @@ public class MaghaleKhodam {
 						
 			workloadFromFile(brokerId, pesNumber, fileSize, outputSize, thresholdUtilModel, nullutilizationModel);
 			
-			/* Random 500 cloudlets
-			 * for (int i = 0; i < 500; i++) { //rand.nextInt(100)+1; //random between
-			 * [1-100] activity ac=new activity(i,rand.nextInt(500)+1,1, fileSize,
-			 * outputSize, fullUtilModel, nullutilizationModel,
-			 * nullutilizationModel,rand.nextBoolean() ,rand.nextInt(10)+1,0,6);
-			 * ac.setUserId(brokerId); cloudletList.add(ac); }
+			//Random 500 cloudlets
+			/*
+			for (int i = 0; i < 10000; i++) {
+				length = (long)(rand.nextInt(100000-50000+1)+50000); //workload of activity
+				acivityType=rand.nextBoolean(); //bool value, false=normal, true=batching
+				groupingChar = rand.nextInt(100)+1; //random between [1-100]
+
+				arrivingTime = rand.nextInt(9)+1; //random between [1-9]
+				dealine= rand.nextInt(180-120+1)+120; //random between [120-180]
+				
+				activity ac = new activity(i,length,1, fileSize, outputSize, fullutilizationModel,
+						nullutilizationModel, nullutilizationModel, rand.nextBoolean(), groupingChar, arrivingTime, dealine);
+				ac.setUserId(brokerId);
+				cloudletList.add(ac);
+			}
 			 */
 			
 			broker.submitCloudletList(cloudletList);
@@ -261,7 +270,7 @@ public class MaghaleKhodam {
 		
 		 for (int i = 0; i < numberofVms; i++) { 
 			 Vm vm = new PowerVm(i, brokerId, mips, pesNumber, ram, bw,size, 1 ,vmm, new CloudletSchedulerEicb(),1000);				
-			 //vm.setHost(datacenter0.getHostList().get(0));
+			 //Vm vm = new PowerVm(i, brokerId, mips, pesNumber, ram, bw,size, 1 ,vmm, new CloudletSchedulerSpaceShared(),1000);
 			 vmlist.add(vm); 
 		 }
 	}
@@ -329,9 +338,9 @@ public class MaghaleKhodam {
 		int ram = 4096; // host memory (MB)
 		long storage = 1000000; // host storage
 		int bw = 10000;
-		/*
+		
 		hostList.add(
-				new PowerHost(
+				new PowerHostUtilizationHistory(
 				//new Host(
 					hostId,
 					new RamProvisionerSimple(ram),
@@ -343,7 +352,7 @@ public class MaghaleKhodam {
 				)
 			); // This is our machine
 			
-	    */
+	    
 		
 		// HP ProLiant ML110 G5 
 		// with same memory
@@ -356,7 +365,7 @@ public class MaghaleKhodam {
 		peList.add(new Pe(0, new PeProvisionerSimple(mips))); // need to store Pe id and MIPS Rating
 		peList.add(new Pe(1, new PeProvisionerSimple(mips))); // need to store Pe id and MIPS Rating
 
-
+		
 		hostList.add(
 				new PowerHostUtilizationHistory(
 					hostId,
@@ -368,6 +377,7 @@ public class MaghaleKhodam {
 				new PowerModelSpecPowerHpProLiantMl110G5Xeon3075() 
 				)
 			); // This is our machine
+		
 		
 		
 		/*
@@ -441,7 +451,7 @@ public class MaghaleKhodam {
 	private static DatacenterBroker createBroker() {
 		DatacenterBroker broker = null;
 		try {
-			broker = new PowerDatacenterBroker("Broker");
+			broker = new DatacenterBroker("Broker");
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

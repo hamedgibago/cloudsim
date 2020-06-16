@@ -5,7 +5,7 @@ public class UtilizationModelThreshold implements UtilizationModel {
 	private double threshold;
 	
 	public UtilizationModelThreshold(double threshold)
-	{
+	{		
 		this.threshold=threshold;
 	}
 	

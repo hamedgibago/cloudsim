@@ -37,25 +37,42 @@ public class activity extends Cloudlet {
 		return deadline;
 	}
 	
-	public activity(int cloudletId, long cloudletLength, int pesNumber, long cloudletFileSize, long cloudletOutputSize, UtilizationModel utilizationModelCpu, UtilizationModel utilizationModelRam, UtilizationModel utilizationModelBw) {
-
-        super(cloudletId, cloudletLength, pesNumber, cloudletFileSize, cloudletOutputSize, utilizationModelCpu, utilizationModelRam, utilizationModelBw);
-
-    }
-
-    public activity(int cloudletId, long cloudletLength, int pesNumber, long cloudletFileSize, long cloudletOutputSize, UtilizationModel utilizationModelCpu, UtilizationModel utilizationModelRam, UtilizationModel utilizationModelBw, boolean record, List<String> fileList) {
-        super(cloudletId, cloudletLength, pesNumber, cloudletFileSize, cloudletOutputSize, utilizationModelCpu, utilizationModelRam, utilizationModelBw, record, fileList);
-
-    }
-
-    public activity(int cloudletId, long cloudletLength, int pesNumber, long cloudletFileSize, long cloudletOutputSize, UtilizationModel utilizationModelCpu, UtilizationModel utilizationModelRam, UtilizationModel utilizationModelBw, List<String> fileList) {
-        super(cloudletId, cloudletLength, pesNumber, cloudletFileSize, cloudletOutputSize, utilizationModelCpu, utilizationModelRam, utilizationModelBw, fileList);
-    }
-
-    public activity(int cloudletId, long cloudletLength, int pesNumber, long cloudletFileSize, long cloudletOutputSize, UtilizationModel utilizationModelCpu, UtilizationModel utilizationModelRam, UtilizationModel utilizationModelBw, boolean record) {
-        super(cloudletId, cloudletLength, pesNumber, cloudletFileSize, cloudletOutputSize, utilizationModelCpu, utilizationModelRam, utilizationModelBw, record);
-    }
-    
+	/*
+	 * public activity(int cloudletId, long cloudletLength, int pesNumber, long
+	 * cloudletFileSize, long cloudletOutputSize, UtilizationModel
+	 * utilizationModelCpu, UtilizationModel utilizationModelRam, UtilizationModel
+	 * utilizationModelBw) {
+	 * 
+	 * super(cloudletId, cloudletLength, pesNumber, cloudletFileSize,
+	 * cloudletOutputSize, utilizationModelCpu, utilizationModelRam,
+	 * utilizationModelBw);
+	 * 
+	 * }
+	 * 
+	 * public activity(int cloudletId, long cloudletLength, int pesNumber, long
+	 * cloudletFileSize, long cloudletOutputSize, UtilizationModel
+	 * utilizationModelCpu, UtilizationModel utilizationModelRam, UtilizationModel
+	 * utilizationModelBw, boolean record, List<String> fileList) {
+	 * super(cloudletId, cloudletLength, pesNumber, cloudletFileSize,
+	 * cloudletOutputSize, utilizationModelCpu, utilizationModelRam,
+	 * utilizationModelBw, record, fileList);
+	 * 
+	 * }
+	 * 
+	 * public activity(int cloudletId, long cloudletLength, int pesNumber, long
+	 * cloudletFileSize, long cloudletOutputSize, UtilizationModel
+	 * utilizationModelCpu, UtilizationModel utilizationModelRam, UtilizationModel
+	 * utilizationModelBw, List<String> fileList) { super(cloudletId,
+	 * cloudletLength, pesNumber, cloudletFileSize, cloudletOutputSize,
+	 * utilizationModelCpu, utilizationModelRam, utilizationModelBw, fileList); }
+	 * 
+	 * public activity(int cloudletId, long cloudletLength, int pesNumber, long
+	 * cloudletFileSize, long cloudletOutputSize, UtilizationModel
+	 * utilizationModelCpu, UtilizationModel utilizationModelRam, UtilizationModel
+	 * utilizationModelBw, boolean record) { super(cloudletId, cloudletLength,
+	 * pesNumber, cloudletFileSize, cloudletOutputSize, utilizationModelCpu,
+	 * utilizationModelRam, utilizationModelBw, record); }
+	 */    
     public activity(int cloudletId, long cloudletLength, int pesNumber, long cloudletFileSize, long cloudletOutputSize, UtilizationModel utilizationModelCpu, UtilizationModel utilizationModelRam, UtilizationModel utilizationModelBw,boolean acivityType,int groupingChar,int arrivingTime,int dealine) {
 
         super(cloudletId, cloudletLength, pesNumber, cloudletFileSize, cloudletOutputSize, utilizationModelCpu, utilizationModelRam, utilizationModelBw);

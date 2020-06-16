@@ -113,6 +113,15 @@ public class Host {
 
 		return smallerTime;
 	}
+	
+	public double getResourceUsage()
+	{
+		double vmMipsSum=0;
+		 for(Vm vm:getVmList()) {
+ 			 vmMipsSum+= vm.getMips();
+		 }
+		 return vmMipsSum/getTotalMips();
+	}
 
 	/**
 	 * Adds a VM migrating into the current (dstHost) host.

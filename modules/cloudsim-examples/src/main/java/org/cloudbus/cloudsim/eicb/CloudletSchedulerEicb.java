@@ -1,29 +1,38 @@
 package org.cloudbus.cloudsim.eicb;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Collections;
+//import java.util.Comparator;
 
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.CloudletSchedulerSpaceShared;
 import org.cloudbus.cloudsim.Consts;
+import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.ResCloudlet;
+import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.core.CloudSim;
+import org.cloudbus.cloudsim.core.SimEntity;
+import org.cloudbus.cloudsim.power.PowerDatacenter;
 
-import com.sun.corba.se.pept.broker.Broker;
+//import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.Collections;
 
 public class CloudletSchedulerEicb extends CloudletSchedulerSpaceShared {
-		
+	
+	SimEntity entity= CloudSim.getEntity("Datacenter_0");
+	PowerDatacenter powerDs=(PowerDatacenter)entity;
+	//PowerDatacenterBroker broker = (PowerDatacenterBroker)CloudSim.getEntity("Broker");
+    
+	
+	//List<Host> hosts= powerDs.getHostList();
+	
 	@Override
 	public double updateVmProcessing(double currentTime, List<Double> mipsShare)
 	{			
 		double total= getTotalUtilizationOfCpu(currentTime);
-		
-		
-		
-		
+										
 		setCurrentMipsShare(mipsShare);
 		double timeSpam = currentTime - getPreviousTime(); // time since last update		 
 		double capacity = 0.0;
@@ -38,9 +47,58 @@ public class CloudletSchedulerEicb extends CloudletSchedulerSpaceShared {
 		currentCpus = cpus;
 		capacity /= cpus; // average capacity of each cpu		
 		
+		double av=0;
 		// each machine in the exec list has the same amount of cpu
-	    for (ResCloudlet rcl : getCloudletExecList()) {
-	    	 int vmid= rcl.getCloudlet().getVmId();	    	
+	    for (ResCloudlet rcl : getCloudletExecList()) {	    		    
+	    	int vmid= rcl.getCloudlet().getVmId();
+	    	
+	    	//List<Host> sortedHost= powerDs.getHostList().stream().sorted().collect(Collectors.toList());
+	    	
+	    	//List<Host> hostls= powerDs.getHostList();
+	    	List<Host> hostls= new ArrayList<Host>();
+	    	hostls.addAll(powerDs.getHostList());
+	    	//Collections.copy(hostls, powerDs.getHostList());
+	    	
+	    	//sort(PMs) by the CPU utilization in CRU
+	    	try {
+			
+	    		Collections.sort(hostls, new java.util.Comparator<Host>() {
+		    		  public int compare(Host h1, Host h2) {
+		    		    //return h1.getResourceUsage().compareTo(h2.getResourceUsage());
+		    			  return Double.compare(h1.getResourceUsage(), h2.getResourceUsage());
+		    		  }
+		    		});
+			} catch (Exception e) {
+				Log.printLine();
+				Log.printLine(e);
+			}
+	    	
+	    	
+	    	/*
+	    	List<Host> hostls= powerDs.getHostList();
+	    	List<Double> dpm=new ArrayList<Double>();
+			int i = 0;
+			for (Host host : hostls) {
+				for (Vm vm : host.getVmList()) {
+					double tmp = 0;
+					try {
+						tmp = dpm.get(i);
+					} catch (Exception e) {
+						// TODO: handle exception
+					}
+
+					tmp += vm.getMips() / host.getTotalMips();
+					try {
+						dpm.set(i, tmp);
+					} catch (Exception e) {
+						dpm.add(tmp);
+					}
+				}
+				i++;
+			}
+	    	*/
+	    	
+	    	
 	    	rcl.updateCloudletFinishedSoFar((long) (capacity * timeSpam * rcl.getNumberOfPes() * Consts.MILLION));
 	    	
 	    	//if(rcl.getCloudlet().getWaitingTime()>0)
@@ -213,6 +271,11 @@ public class CloudletSchedulerEicb extends CloudletSchedulerSpaceShared {
 		length += extraSize;
 		cloudlet.setCloudletLength(length);
 		return cloudlet.getCloudletLength() / capacity;	
+	}
+	
+	private double curResUsage()
+	{
+		return 0;
 	}
 	
 //	
