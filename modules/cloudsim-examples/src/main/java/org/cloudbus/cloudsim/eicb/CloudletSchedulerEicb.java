@@ -30,9 +30,8 @@ public class CloudletSchedulerEicb extends CloudletSchedulerSpaceShared {
 	
 	@Override
 	public double updateVmProcessing(double currentTime, List<Double> mipsShare)
-	{			
+	{				
 		double total= getTotalUtilizationOfCpu(currentTime);
-										
 		setCurrentMipsShare(mipsShare);
 		double timeSpam = currentTime - getPreviousTime(); // time since last update		 
 		double capacity = 0.0;
@@ -51,6 +50,7 @@ public class CloudletSchedulerEicb extends CloudletSchedulerSpaceShared {
 		// each machine in the exec list has the same amount of cpu
 	    for (ResCloudlet rcl : getCloudletExecList()) {	    		    
 	    	int vmid= rcl.getCloudlet().getVmId();
+	    	Cloudlet cl=rcl.getCloudlet();
 	    	
 	    	//List<Host> sortedHost= powerDs.getHostList().stream().sorted().collect(Collectors.toList());
 	    	
@@ -72,6 +72,25 @@ public class CloudletSchedulerEicb extends CloudletSchedulerSpaceShared {
 				Log.printLine();
 				Log.printLine(e);
 			}
+	    	/*
+	        Vm selectedVm= powerDs.getVmList().stream().filter(v->vmid==v.getId())
+	        .findFirst().orElse(null);
+	        int selectedHostId= selectedVm.getHost().getId();
+	        
+	        Host selectedHost=powerDs.getHostList().stream().filter(h->h.getId()==selectedHostId)
+	        		.findFirst().orElse(null);
+	        */
+	    	
+	       
+	        	        
+	    	//if(cl.getCloudletLength()+total<=)
+	    	
+	    	for(Host host:hostls) {
+	    		
+	    		//if(rcl.getCloudlet().getCloudletLength()+host.getAvailableMips()+
+	    			//	<=)	
+	    	}
+	    	
 	    	
 	    	
 	    	/*
@@ -98,6 +117,7 @@ public class CloudletSchedulerEicb extends CloudletSchedulerSpaceShared {
 			}
 	    	*/
 	    	
+	    	//if(rcl.setMachineAndPeId(machineId, peId);)
 	    	
 	    	rcl.updateCloudletFinishedSoFar((long) (capacity * timeSpam * rcl.getNumberOfPes() * Consts.MILLION));
 	    	
@@ -208,6 +228,7 @@ public class CloudletSchedulerEicb extends CloudletSchedulerSpaceShared {
 				nextEvent = estimatedFinishTime;
 			}
 		}
+		
 		setPreviousTime(currentTime);
 		return nextEvent;		
 	}

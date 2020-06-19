@@ -6,6 +6,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /*
  * Title:        CloudSim Toolkit
@@ -52,6 +54,7 @@ import org.cloudbus.cloudsim.VmSchedulerSpaceShared;
 import org.cloudbus.cloudsim.VmSchedulerTimeShared;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.eicb.CloudletSchedulerEicb;
+import org.cloudbus.cloudsim.eicb.PowerVmAllocationPolicyEicbThreshold;
 import org.cloudbus.cloudsim.eicb.activity;
 import org.cloudbus.cloudsim.lists.HostList;
 import org.cloudbus.cloudsim.lists.PeList;
@@ -70,6 +73,7 @@ import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 
 import com.sun.corba.se.spi.orbutil.fsm.State;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.integration.*;
@@ -133,7 +137,7 @@ public class MaghaleKhodam {
 			// before it was VmAllocationPolicySimple 
 			// VM description
 			int vmid = 0;
-			int mips =1860;
+			int mips =930;
 			int pesNumber = 1; // number of cpus
 			
 			
@@ -180,24 +184,13 @@ public class MaghaleKhodam {
 			UtilizationModel fullutilizationModel=new UtilizationModelFull();
 			
 						
-			workloadFromFile(brokerId, pesNumber, fileSize, outputSize, thresholdUtilModel, nullutilizationModel);
+			String filepath="c:\\workloadlist.txt";
+			workloadFromFile(brokerId, pesNumber, fileSize, outputSize, thresholdUtilModel, nullutilizationModel,filepath);
 			
-			//Random 500 cloudlets
-			/*
-			for (int i = 0; i < 10000; i++) {
-				length = (long)(rand.nextInt(100000-50000+1)+50000); //workload of activity
-				acivityType=rand.nextBoolean(); //bool value, false=normal, true=batching
-				groupingChar = rand.nextInt(100)+1; //random between [1-100]
-
-				arrivingTime = rand.nextInt(9)+1; //random between [1-9]
-				dealine= rand.nextInt(180-120+1)+120; //random between [120-180]
-				
-				activity ac = new activity(i,length,1, fileSize, outputSize, fullutilizationModel,
-						nullutilizationModel, nullutilizationModel, rand.nextBoolean(), groupingChar, arrivingTime, dealine);
-				ac.setUserId(brokerId);
-				cloudletList.add(ac);
-			}
-			 */
+			//Create Random cloudlets			
+			//createRandomClouldlets(10,brokerId, rand, fileSize, outputSize, nullutilizationModel, fullutilizationModel);
+								
+			//writeCloudletsToFile(cloudletList,filepath);
 			
 			broker.submitCloudletList(cloudletList);
 			
@@ -255,6 +248,44 @@ public class MaghaleKhodam {
 			Log.printLine("Unwanted errors happen");
 		}
 	}
+
+	private static void writeCloudletsToFile(List<Cloudlet> cloudletList2, String filepath) throws IOException {
+		StringBuilder builder = new StringBuilder();
+		for(Cloudlet cl: cloudletList2)
+		{											
+			builder.append(String.join(",",Integer.toString(cl.getCloudletId()),Integer.toString((int)cl.getCloudletLength()),
+					Boolean.toString(((activity)cl).acivityType),Integer.toString(((activity)cl).groupingChar),
+					Integer.toString(((activity)cl).arrivingTime),Integer.toString((int)((activity)cl).deadline)));
+			builder.append("\n");
+		}
+		
+		
+		byte[] strToBytes = builder.toString().getBytes();
+		Path path = Paths.get(filepath);
+	    Files.write(path, strToBytes);
+	}
+
+	private static void createRandomClouldlets(int total,int brokerId, Random rand, long fileSize, long outputSize,
+			UtilizationModel nullutilizationModel, UtilizationModel fullutilizationModel) {
+		long length;
+		boolean acivityType;
+		int groupingChar;
+		int arrivingTime;
+		int dealine;
+		for (int i = 0; i < total; i++) {
+			length = (long)(rand.nextInt(100000-50000+1)+50000); //workload of activity
+			acivityType=rand.nextBoolean(); //bool value, false=normal, true=batching
+			groupingChar = rand.nextInt(100)+1; //random between [1-100]
+
+			arrivingTime = rand.nextInt(9)+1; //random between [1-9]
+			dealine= rand.nextInt(180-120+1)+120; //random between [120-180]
+			
+			activity ac = new activity(i,length,1, fileSize, outputSize, fullutilizationModel,
+					nullutilizationModel, nullutilizationModel, rand.nextBoolean(), groupingChar, arrivingTime, dealine);
+			ac.setUserId(brokerId);
+			cloudletList.add(ac);
+		}
+	}
 	
 	public static double value2(double x) {
         return x;
@@ -277,9 +308,9 @@ public class MaghaleKhodam {
 
 
 	private static void workloadFromFile(int brokerId, int pesNumber, long fileSize, long outputSize,
-			UtilizationModel fullUtilModel, UtilizationModel nullutilizationModel)
+			UtilizationModel fullUtilModel, UtilizationModel nullutilizationModel,String filename)
 			throws IOException, FileNotFoundException {
-		try (BufferedReader br = new BufferedReader(new FileReader("c:/workloadlist.txt"))) {
+		try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
 		    String line;
 		    while ((line = br.readLine()) != null) {
 		    	Log.printLine(line);
@@ -347,7 +378,7 @@ public class MaghaleKhodam {
 					new BwProvisionerSimple(bw),
 					storage,
 					peList,
-					new VmSchedulerTimeShared(peList),
+					new VmSchedulerTimeShared(peList),					
 					new PowerModelSpecPowerHpProLiantMl110G4Xeon3040() 
 				)
 			); // This is our machine
@@ -365,7 +396,7 @@ public class MaghaleKhodam {
 		peList.add(new Pe(0, new PeProvisionerSimple(mips))); // need to store Pe id and MIPS Rating
 		peList.add(new Pe(1, new PeProvisionerSimple(mips))); // need to store Pe id and MIPS Rating
 
-		
+		/*
 		hostList.add(
 				new PowerHostUtilizationHistory(
 					hostId,
@@ -377,7 +408,7 @@ public class MaghaleKhodam {
 				new PowerModelSpecPowerHpProLiantMl110G5Xeon3075() 
 				)
 			); // This is our machine
-		
+		*/
 		
 		
 		/*
@@ -430,7 +461,8 @@ public class MaghaleKhodam {
 			//for power datacenter need to set scheduling interval 			
 			//datacenter = new PowerDatacenter(name, characteristics, new VmAllocationPolicySimple(hostList), storageList, 1);
 			datacenter = new PowerDatacenter(name, characteristics, 
-					new PowerVmAllocationPolicyMigrationStaticThreshold(hostList,vmSelectionPolicy,0.7), storageList, 1);
+					//new PowerVmAllocationPolicyMigrationStaticThreshold(hostList,vmSelectionPolicy,0.7), storageList, 1);
+					new PowerVmAllocationPolicyEicbThreshold(hostList,vmSelectionPolicy,0.7), storageList, 1);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}		
