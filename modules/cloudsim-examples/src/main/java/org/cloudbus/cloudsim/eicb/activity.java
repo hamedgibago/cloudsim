@@ -37,6 +37,17 @@ public class activity extends Cloudlet {
 		return deadline;
 	}
 	
+	/**
+	 * Gets the activity waiting time in waiting queue.
+	 * 
+	 * @param currentTime Time of cloudsim clock
+	 * @return activity waiting time in waiting queue
+	 */
+	public double getActivityWaitingTime(double currentTime)
+	{
+		return currentTime-arrivingTime;
+	}
+	
 	/*
 	 * public activity(int cloudletId, long cloudletLength, int pesNumber, long
 	 * cloudletFileSize, long cloudletOutputSize, UtilizationModel

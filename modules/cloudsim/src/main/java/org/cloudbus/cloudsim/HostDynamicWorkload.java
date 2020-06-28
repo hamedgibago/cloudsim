@@ -58,7 +58,7 @@ public class HostDynamicWorkload extends Host {
 	}
 
 	@Override
-	public double updateVmsProcessing(double currentTime) {
+	public double updateVmsProcessing(double currentTime) {		
 		double smallerTime = super.updateVmsProcessing(currentTime);
 		setPreviousUtilizationMips(getUtilizationMips());
 		setUtilizationMips(0);
@@ -77,15 +77,22 @@ public class HostDynamicWorkload extends Host {
 			double totalAllocatedMips = getVmScheduler().getTotalAllocatedMipsForVm(vm);
 
 			if (!Log.isDisabled()) {
-				Log.formatLine(
-						"%.2f: [Host #" + getId() + "] Total allocated MIPS for VM #" + vm.getId()
-								+ " (Host #" + vm.getHost().getId()
-								+ ") is %.2f, was requested %.2f out of total %.2f (%.2f%%)",
-						CloudSim.clock(),
-						totalAllocatedMips,
-						totalRequestedMips,
-						vm.getMips(),
-						totalRequestedMips / vm.getMips() * 100);
+				//try catch added by hamed
+				try {
+					Log.formatLine(
+							"%.2f: [Host #" + getId() + "] Total allocated MIPS for VM #" + vm.getId()
+									+ " (Host #" + vm.getHost().getId()
+									+ ") is %.2f, was requested %.2f out of total %.2f (%.2f%%)",
+							CloudSim.clock(),
+							totalAllocatedMips,
+							totalRequestedMips,
+							vm.getMips(),
+							totalRequestedMips / vm.getMips() * 100);
+					
+				} catch (Exception e) {
+					Log.print(e);
+				}
+				
 
 				List<Pe> pes = getVmScheduler().getPesAllocatedForVM(vm);
 				StringBuilder pesString = new StringBuilder();
